@@ -191,10 +191,14 @@ async function withImap(account, fn) {
   finally { await client.logout(); }
 }
 
-async function fetchEmailList(account, folder = 'INBOX', page = 1, limit = 50) {
+async function fetchEmailList(account, folder = 'INBOX', page = 1, limit = 50, nocache = false) {
   const cacheKey = `list_${account.id}_${folder}_${page}_${limit}`;
-  const cached = getCached(cacheKey, 2 * 60 * 1000);
-  if (cached) return cached;
+  if (!nocache) {
+    const cached = getCached(cacheKey, 15 * 1000);
+    if (cached) return cached;
+  } else {
+    cache.delete(cacheKey);
+  }
 
   const result = await withImap(account, async (client) => {
     const lock = await client.getMailboxLock(folder);
@@ -352,7 +356,31 @@ app.get('/api/emails', authMiddleware, async (req, res) => {
     const folder = req.query.folder || 'INBOX';
     const page = parseInt(req.query.page) || 1;
     const limit = Math.min(parseInt(req.query.limit) || 50, 100);
-    res.json(await fetchEmailList(req.account, folder, page, limit));
+    const nocache = req.query.nocache === '1';
+
+    if (folder === 'INBOX') {
+      // Merge INBOX + Junk so spam is visible without switching folders
+      const [inboxData, junkData] = await Promise.all([
+        fetchEmailList(req.account, 'INBOX', page, limit, nocache),
+        fetchEmailList(req.account, 'Junk', 1, limit, nocache).catch(() => ({ emails: [], total: 0 })),
+      ]);
+
+      const inboxEmails = (inboxData.emails || []).map(e => ({ ...e, folder: 'INBOX' }));
+      const junkEmails = (junkData.emails || []).map(e => ({ ...e, folder: 'Junk', spam: true }));
+      const allEmails = [...inboxEmails, ...junkEmails];
+      allEmails.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      res.json({
+        emails: allEmails.slice(0, limit),
+        total: inboxData.total + junkData.total,
+        page,
+        pages: Math.ceil((inboxData.total + junkData.total) / limit),
+      });
+    } else {
+      const data = await fetchEmailList(req.account, folder, page, limit, nocache);
+      data.emails = (data.emails || []).map(e => ({ ...e, folder }));
+      res.json(data);
+    }
   } catch (e) {
     console.error('Fetch emails error:', e.message);
     res.status(500).json({ error: 'Ошибка загрузки писем: ' + e.message });

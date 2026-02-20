@@ -11,6 +11,7 @@ if (!TOKEN || !ACCOUNT) {
 
 let currentFolder = 'INBOX';
 let currentEmailUid = null;
+let currentEmailFolder = null;
 let refreshTimer = null;
 
 // ── API Helper ────────────────────────────────────────
@@ -39,15 +40,15 @@ function init() {
   // Load emails
   loadEmails();
 
-  // Auto-refresh every 60s
-  refreshTimer = setInterval(loadEmails, 60000);
+  // Auto-refresh every 15s
+  refreshTimer = setInterval(() => loadEmails(true), 15000);
 
   // Event listeners
   setupEvents();
 }
 
 // ── Load Emails ───────────────────────────────────────
-async function loadEmails() {
+async function loadEmails(forceRefresh = false) {
   const listEl = document.getElementById('emailList');
   const loadingEl = document.getElementById('emailLoading');
   const emptyEl = document.getElementById('emailEmpty');
@@ -61,7 +62,8 @@ async function loadEmails() {
   errorEl.classList.add('hidden');
 
   try {
-    const data = await api(`/api/emails?folder=${encodeURIComponent(currentFolder)}&limit=50`);
+    const nocache = forceRefresh ? '&nocache=1' : '';
+    const data = await api(`/api/emails?folder=${encodeURIComponent(currentFolder)}&limit=50${nocache}`);
     loadingEl.classList.add('hidden');
 
     // Remove existing email items
@@ -78,19 +80,21 @@ async function loadEmails() {
       el.className = 'email-item' + (email.seen ? '' : ' unread');
       if (email.uid === currentEmailUid) el.classList.add('active');
       el.dataset.uid = email.uid;
+      el.dataset.folder = email.folder || currentFolder;
 
       const fromName = email.from.name || email.from.address || 'Неизвестный';
       const dateStr = formatDate(email.date);
+      const spamBadge = email.spam ? '<span class="spam-badge">Спам</span>' : '';
 
       el.innerHTML = `
         <div class="email-item-top">
-          <div class="email-item-from">${escapeHtml(fromName)}</div>
+          <div class="email-item-from">${escapeHtml(fromName)}${spamBadge}</div>
           <div class="email-item-date">${dateStr}</div>
         </div>
         <div class="email-item-subject">${escapeHtml(email.subject)}</div>
       `;
 
-      el.addEventListener('click', () => openEmail(email.uid));
+      el.addEventListener('click', () => openEmail(email.uid, email.folder || currentFolder));
       listEl.appendChild(el);
     });
 
@@ -113,8 +117,9 @@ async function loadEmails() {
 }
 
 // ── Open Email ────────────────────────────────────────
-async function openEmail(uid) {
+async function openEmail(uid, folder) {
   currentEmailUid = uid;
+  currentEmailFolder = folder || currentFolder;
 
   // Highlight active item
   document.querySelectorAll('.email-item').forEach((el) => {
@@ -133,7 +138,7 @@ async function openEmail(uid) {
   loadingEl.classList.remove('hidden');
 
   try {
-    const data = await api(`/api/emails/${uid}?folder=${encodeURIComponent(currentFolder)}`);
+    const data = await api(`/api/emails/${uid}?folder=${encodeURIComponent(currentEmailFolder)}`);
     loadingEl.classList.add('hidden');
     contentEl.classList.remove('hidden');
 
@@ -191,7 +196,7 @@ async function openEmail(uid) {
     contentEl.innerHTML = `
       <div class="error-state">
         <p>${escapeHtml(err.message)}</p>
-        <button class="btn btn-sm btn-outline" onclick="openEmail(${uid})">Повторить</button>
+        <button class="btn btn-sm btn-outline" onclick="openEmail(${uid}, '${currentEmailFolder}')">Повторить</button>
       </div>`;
   }
 }
@@ -209,6 +214,7 @@ function setupEvents() {
       el.classList.add('active');
       currentFolder = folder;
       currentEmailUid = null;
+      currentEmailFolder = null;
 
       // Folder names map
       const folderNames = {
@@ -221,7 +227,7 @@ function setupEvents() {
 
       // Reset content panel
       document.getElementById('emailContentPanel').classList.add('hidden');
-      loadEmails();
+      loadEmails(true);
 
       // Close sidebar on mobile
       closeSidebar();
@@ -233,8 +239,7 @@ function setupEvents() {
     const btn = document.getElementById('refreshBtn');
     btn.style.animation = 'spin 0.8s linear';
     setTimeout(() => (btn.style.animation = ''), 800);
-    // Invalidate cache by adding timestamp
-    loadEmails();
+    loadEmails(true);
   });
 
   // Back to list (mobile)
