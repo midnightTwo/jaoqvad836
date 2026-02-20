@@ -1,0 +1,19 @@
+{
+  "name": "fluxmail",
+  "version": "1.0.0",
+  "description": "FluxMail — Personal Email Service",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "imapflow": "^1.0.148",
+    "mailparser": "^3.6.9"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

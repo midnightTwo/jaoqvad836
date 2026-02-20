@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FluxMail — Админ-панель</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+</head>
+<body class="page-admin">
+  <div class="bg-aurora" style="opacity:.25"></div>
+  <div class="bg-grid"></div>
+
+  <!-- ═══ Admin Login ═══ -->
+  <div class="admin-login-wrapper" id="adminLoginView">
+    <div class="login-card">
+      <div class="login-logo">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+          <defs><linearGradient id="aG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#818CF8"/><stop offset="100%" stop-color="#38BDF8"/></linearGradient></defs>
+          <circle cx="12" cy="8" r="4" stroke="url(#aG)" stroke-width="1.8" fill="none"/>
+          <path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke="url(#aG)" stroke-width="1.8" fill="none"/>
+        </svg>
+      </div>
+      <h1 class="login-title">Админ-панель</h1>
+      <p class="login-subtitle">Введите пароль для доступа</p>
+      <form id="adminLoginForm" autocomplete="off">
+        <div class="input-group">
+          <label for="adminPass">Пароль</label>
+          <input type="password" id="adminPass" name="adminPass" placeholder="Пароль администратора" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span>Войти</span>
+        </button>
+        <div class="form-error hidden" id="adminLoginError">Неверный пароль</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══ Admin Dashboard ═══ -->
+  <div class="admin-dashboard hidden" id="adminDashboard">
+
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div class="admin-topbar-left">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <defs><linearGradient id="aG2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#818CF8"/><stop offset="100%" stop-color="#38BDF8"/></linearGradient></defs>
+          <rect x="2" y="4" width="20" height="16" rx="2" stroke="url(#aG2)" stroke-width="1.8" fill="none"/>
+          <path d="M2 7l8.97 5.7a1.94 1.94 0 002.06 0L22 7" stroke="url(#aG2)" stroke-width="1.8" fill="none"/>
+        </svg>
+        <span class="admin-topbar-title">Flux<strong>Mail</strong> <span class="admin-tag">Admin</span></span>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="adminLogout">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Выйти</span>
+      </button>
+    </header>
+
+    <!-- Body -->
+    <div class="admin-body">
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon stat-icon--total">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value" id="statTotal">0</span>
+            <span class="stat-label">Всего аккаунтов</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon--active">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value" id="statActive">0</span>
+            <span class="stat-label">Активные</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon--inactive">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value" id="statInactive">0</span>
+            <span class="stat-label">Неактивные</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="admin-tabs">
+        <button class="tab active" data-tab="accounts">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Аккаунты
+        </button>
+        <button class="tab" data-tab="upload">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Загрузить
+        </button>
+      </div>
+
+      <!-- Tab: Accounts -->
+      <div class="tab-panel" id="tabAccounts">
+        <div class="panel-toolbar">
+          <div class="search-wrap">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="searchAccounts" class="input-sm" placeholder="Поиск по email…">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Логин</th>
+                <th>Пароль</th>
+                <th>Статус</th>
+                <th>Дата</th>
+                <th style="width:100px">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="accountsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: Bulk Upload -->
+      <div class="tab-panel hidden" id="tabUpload">
+        <div class="upload-area">
+          <div class="upload-hint">Вставьте строки (по одной на строку)<br><code>email:pass:recovery:recpass:refreshToken:clientId</code></div>
+          <textarea id="bulkData" class="textarea" rows="10" placeholder="user@outlook.com:pass123:recovery@mail.com:recpass:token:clientId&#10;user2@outlook.com:pass456:..."></textarea>
+          <button class="btn btn-primary" id="bulkUploadBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>Загрузить аккаунты</span>
+          </button>
+        </div>
+
+        <div class="upload-results hidden" id="uploadResults">
+          <div class="upload-stats">
+            <div class="upload-stat upload-stat--ok">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Успешно: <strong id="uploadOk">0</strong></span>
+            </div>
+            <div class="upload-stat upload-stat--fail">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <span>Ошибки: <strong id="uploadFail">0</strong></span>
+            </div>
+          </div>
+          <div class="upload-errors hidden" id="uploadErrors"></div>
+          <div class="upload-created hidden" id="uploadCreated">
+            <h4>Созданные аккаунты</h4>
+            <table class="table table-sm">
+              <thead><tr><th>Email</th><th>Пароль</th></tr></thead>
+              <tbody id="uploadCreatedBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /admin-body -->
+  </div><!-- /admin-dashboard -->
+
+  <!-- ═══ Edit Modal ═══ -->
+  <div class="modal-overlay hidden" id="editModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Редактировать аккаунт</h3>
+        <button class="btn-icon" id="closeModal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="editForm">
+        <input type="hidden" id="editId">
+        <div class="input-group">
+          <label for="editLogin">Email</label>
+          <input type="text" id="editLogin" readonly>
+        </div>
+        <div class="input-group">
+          <label for="editPassword">Пароль</label>
+          <input type="text" id="editPassword" required>
+        </div>
+        <div class="input-group">
+          <label for="editName">Имя</label>
+          <input type="text" id="editName">
+        </div>
+        <div class="input-group">
+          <label for="editActive">Статус</label>
+          <select id="editActive" class="select">
+            <option value="1">Активен</option>
+            <option value="0">Неактивен</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" id="cancelEdit">Отмена</button>
+          <button type="submit" class="btn btn-primary">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>
